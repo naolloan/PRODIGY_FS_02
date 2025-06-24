@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Department Management</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Department Management</h1>
+    <button id="logoutBtn">Logout</button>
+  </header>
+
+  <main>
+    <div id="errorMessage" class="alert error"></div>
+    <div id="successMessage" class="alert success"></div>
+
+    <section>
+      <h2>Add New Department</h2>
+      <form id="addDeptForm">
+        <div class="form-group">
+          <label for="deptName">Name*</label>
+          <input type="text" id="deptName" required>
+        </div>
+        <div class="form-group">
+          <label for="deptDesc">Description</label>
+          <textarea id="deptDesc"></textarea>
+        </div>
+        <button type="submit">Add Department</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>All Departments</h2>
+      <table id="departmentsTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Filled dynamically -->
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- Edit Modal -->
+  <div id="editDeptModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3>Edit Department</h3>
+      <div class="form-group">
+        <label for="editDeptName">Name*</label>
+        <input type="text" id="editDeptName" required>
+      </div>
+      <div class="form-group">
+        <label for="editDeptDesc">Description</label>
+        <textarea id="editDeptDesc"></textarea>
+      </div>
+      <button id="saveEditDept">Save Changes</button>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/departments.js"></script>
+</body>
+</html>
