@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadDepartments() {
   try {
-    const response = await fetch('/api/departments', {
+    const response = await fetch('http://localhost:3000/api/departments', {
       headers: { 'x-auth-token': localStorage.getItem('token') }
     });
     
@@ -40,6 +40,14 @@ function renderDepartments(departments) {
 }
 
 function setupEventListeners() {
+  // Back to dashboard button
+  const backBtn = document.getElementById('backBtn');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+  }
+  
   // Add Department
   document.getElementById('addDeptForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -50,7 +58,7 @@ function setupEventListeners() {
     };
 
     try {
-      const response = await fetch('/api/departments', {
+      const response = await fetch('http://localhost:3000/api/departments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,7 +93,7 @@ function setupEventListeners() {
     };
 
     try {
-      const response = await fetch(`/api/departments/${currentDepartmentId}`, {
+      const response = await fetch(`http://localhost:3000/api/departments/${currentDepartmentId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -107,7 +115,7 @@ function setupEventListeners() {
 
 async function showEditModal(id) {
   try {
-    const response = await fetch(`/api/departments/${id}`);
+    const response = await fetch(`http://localhost:3000/api/departments/${id}`);
     if (!response.ok) throw new Error('Failed to load department');
     
     const department = await response.json();

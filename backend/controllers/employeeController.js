@@ -74,11 +74,7 @@ exports.createEmployee = async (req, res) => {
     );
 
     // Log the action
-    await logAction(
-      req.user.id,
-      'employee_create',
-      result.insertId
-    );
+    await logAction(req.user.id, 'employee_create', result.insertId);
 
     res.status(201).json({
       message: 'Employee created successfully',
@@ -102,7 +98,7 @@ exports.updateEmployee = async (req, res) => {
       'SELECT * FROM employees WHERE id = ?',
       [id]
     );
-    
+
     if (oldEmployee.length === 0) {
       return res.status(404).json({ message: 'Employee not found' });
     }
@@ -113,18 +109,25 @@ exports.updateEmployee = async (req, res) => {
       [employeeData, id]
     );
 
+    // Fetch updated employee
+    const [updated] = await pool.query(
+      'SELECT * FROM employees WHERE id = ?',
+      [id]
+    );
+
     // Log the action
     await logAction(
       req.user.id,
       'employee_update',
       id,
       JSON.stringify(oldEmployee[0]),
-      JSON.stringify(employeeData)
+      JSON.stringify(updated[0])
     );
 
-    res.json({ 
+    // ✅ Send back updated employee info
+    res.status(200).json({
       message: 'Employee updated successfully',
-      employeeId: id
+      employee: updated[0]
     });
 
   } catch (err) {

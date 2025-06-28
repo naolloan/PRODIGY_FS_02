@@ -2,14 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard</title>
+  <title>Admin Dashboard</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <header>
-    <h1>Employee Dashboard</h1>
+    <h1>Admin Dashboard</h1>
     <div class="user-info">
-      <span id="currentUser">Loading...</span>
       <button id="logoutBtn">Logout</button>
     </div>
   </header>
@@ -18,23 +17,8 @@
     <ul>
       <li><a href="employees.html">Manage Employees</a></li>
       <li><a href="departments.html">Departments</a></li>
-      <li><a href="reports.html">Reports</a></li>
     </ul>
   </nav>
-
-  <main>
-    <div class="stats-container">
-      <div class="stat-card">
-        <h3>Total Employees</h3>
-        <p id="totalEmployees">0</p>
-      </div>
-      <div class="stat-card">
-        <h3>Departments</h3>
-        <p id="totalDepartments">0</p>
-      </div>
-    </div>
-  </main>
-
-  <script src="js/dashboard.js"></script>
+  <script src="js/admin.js"></script>
 </body>
 </html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Employee Portal</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Employee Portal</h1>
+    <button id="logoutBtn">Logout</button>
+  </header>
+
+  <main>
+    <!-- Read-only Employee List -->
+    <section>
+      <h2>Employees</h2>
+      <table id="employeesTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Department</th>
+            <th>Position</th>
+            <!-- NO Actions Column -->
+          </tr>
+        </thead>
+        <tbody><!-- Filled by JS --></tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>All Departments</h2>
+      <table id="departmentsTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Filled dynamically -->
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="js/user.js"></script>
+</body>
+</html>

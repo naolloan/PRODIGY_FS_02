@@ -20,10 +20,12 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       localStorage.setItem('user', JSON.stringify(data.user));
     
       // Redirect based on role
-      if (data.user.role === 'admin') {
-        window.location.href = 'admin-dashboard.html';
-      } else {
+      if (data.user.role === 'manager') {
+        window.location.href = 'manager-dashboard.html';
+      } else if (data.user.role === 'admin') {
         window.location.href = 'index.html';
+      } else if (data.user.role === 'user') {
+        window.location.href = 'user-dashboard.html';
       }
     } else {
       alert(data.message || 'Login failed');

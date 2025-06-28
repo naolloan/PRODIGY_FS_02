@@ -4,9 +4,11 @@ const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const authRoutes = require('./routes/auth');
-const adminRoutes = require('./routes/admin');
+
 const employeeRoutes = require('./routes/employee');
 const departmentRoutes = require('./routes/departments');
+const roleRoutes = require('./routes/roles');
+const managerRoutes = require('./routes/manager');
 
 const app = express();
 
@@ -24,9 +26,11 @@ app.use(cors({
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/admin', adminRoutes);
+
 app.use('/api/employees', employeeRoutes);
 app.use('/api/departments', departmentRoutes);
+app.use('/api/roles', roleRoutes);
+app.use('/api/manager', managerRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {

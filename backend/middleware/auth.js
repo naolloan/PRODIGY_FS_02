@@ -1,7 +1,9 @@
+const pool = require('../config/db');
 const jwt = require('jsonwebtoken');
 
 exports.authenticate = async (req, res, next) => {
   const token = req.header('x-auth-token');
+  console.log('Authenticating request, token:', token);
   
   if (!token) {
     return res.status(401).json({ message: 'No token, authorization denied' });
@@ -23,6 +25,8 @@ exports.authenticate = async (req, res, next) => {
       id: users[0].id,
       role: users[0].role 
     };
+
+    console.log('Authenticated user:', req.user);
     
     next();
   } catch (err) {
@@ -30,9 +34,29 @@ exports.authenticate = async (req, res, next) => {
   }
 };
 
+exports.authorizeManager = (req, res, next) => {
+  if (req.user.role !== 'manager') {
+    return res.status(403).json({ 
+      message: 'Manager privileges required',
+      yourRole: req.user.role
+    });
+  }
+  next();
+};
+
+exports.checkManager = (req, res, next) => {
+  if (req.user.role !== 'manager') {
+    return res.status(403).json({ error: 'Manager access required' });
+  }
+  next();
+};
+
 exports.authorizeAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'Admin access required' });
+  if (!['manager', 'admin'].includes(req.user.role)) {
+    return res.status(403).json({ 
+      message: 'Admin privileges required',
+      yourRole: req.user.role
+    });
   }
   next();
 };

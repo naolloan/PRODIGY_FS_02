@@ -14,4 +14,6 @@ router.post('/login', [
   body('password').exists()
 ], authController.login);
 
+router.get('/verify', authController.verifyToken);
+
 module.exports = router;

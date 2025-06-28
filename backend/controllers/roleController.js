@@ -1,16 +1,54 @@
 const pool = require('../config/db');
 const { logAction } = require('../utils/auditLogger');
 
+exports.assignRole = async (req, res) => {
+  const { id } = req.params;
+  const { role } = req.body;
+
+  try {
+    // Only manager can assign manager role
+    if (role === 'manager' && req.user.role !== 'manager') {
+      return res.status(403).json({ message: 'Only managers can assign manager role' });
+    }
+
+    await pool.query('UPDATE users SET role = ? WHERE id = ?', [role, id]);
+    
+    await logAction(
+      req.user.id,
+      'role_change',
+      id,
+      null,
+      role
+    );
+
+    res.json({ message: 'Role updated successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error updating role' });
+  }
+};
+
 // Get all users (admin only)
 exports.getAllUsers = async (req, res) => {
   try {
-    const [users] = await pool.query(
-      'SELECT id, username, email, role, created_at FROM users'
-    );
+    // Only select non-sensitive information
+    const [users] = await pool.query(`
+      SELECT 
+        id, 
+        username, 
+        email, 
+        role, 
+        created_at
+      FROM users
+      ORDER BY created_at DESC
+    `);
+    
     res.json(users);
   } catch (err) {
-    console.error('Get users error:', err);
-    res.status(500).json({ message: 'Server error fetching users' });
+    console.error('Error fetching users:', err);
+    res.status(500).json({ 
+      message: 'Failed to load users',
+      error: process.env.NODE_ENV === 'development' ? err.message : null
+    });
   }
 };
 

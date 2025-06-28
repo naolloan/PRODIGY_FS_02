@@ -1,265 +1,208 @@
-// Global variables
-let currentUser = null;
-let selectedUserId = null;
-
-// DOM Content Loaded
-document.addEventListener('DOMContentLoaded', async () => {
-  // Check authentication and admin status
-  await verifyAdminStatus();
-  
-  // Load initial data
-  await loadUsers();
-  await loadAuditLogs();
-  
-  // Setup event listeners
-  setupEventListeners();
-  
-  // Update UI
-  updateUserInfo();
+// Logout button
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  localStorage.removeItem('token');
+  window.location.href = 'login.html';
 });
 
-// Verify user is admin
-async function verifyAdminStatus() {
-  const token = localStorage.getItem('token');
-  const userData = localStorage.getItem('user');
-  
-  if (!token || !userData) {
-    redirectToLogin();
-    return;
-  }
-  
+async function loadEmployees() {
   try {
-    currentUser = JSON.parse(userData);
-    
-    // Additional verification with backend
-    const response = await fetch('/api/auth/verify', {
-      headers: { 'x-auth-token': token }
+    const response = await fetch('http://localhost:3000/api/employees', {
+      headers: {
+        'x-auth-token': localStorage.getItem('token')
+      }
     });
-    
-    if (!response.ok) {
-      redirectToLogin();
-    }
-    
-    // Check if admin
-    if (currentUser.role !== 'admin') {
-      window.location.href = 'index.html';
-    }
+    if (!response.ok) throw new Error('Failed to load employees');
+    const employees = await response.json();
+    renderEmployees(employees);
   } catch (err) {
-    console.error('Verification error:', err);
-    redirectToLogin();
+    console.error('Error loading employees:', err);
+    alert('Failed to load employees');
   }
 }
 
-// Load users data
-async function loadUsers() {
-  try {
-    const response = await fetch('/api/admin/users', {
-      headers: { 'x-auth-token': localStorage.getItem('token') }
-    });
-    
-    if (!response.ok) throw new Error('Failed to fetch users');
-    
-    const users = await response.json();
-    renderUsers(users);
-  } catch (err) {
-    showError('Failed to load users: ' + err.message);
-  }
-}
-
-// Render users table
-function renderUsers(users) {
-  const tbody = document.querySelector('#usersTable tbody');
+function renderEmployees(employees) {
+  const tbody = document.querySelector('#employeesTable tbody');
   tbody.innerHTML = '';
-  
-  users.forEach(user => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${user.id}</td>
-      <td>${user.username}</td>
-      <td>${user.email}</td>
-      <td class="role-cell">${capitalizeFirstLetter(user.role)}</td>
-      <td>
-        <button class="btn-edit-role" data-id="${user.id}">Edit Role</button>
+
+  employees.forEach(employee => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${employee.id}</td>
+      <td>${employee.first_name} ${employee.last_name}</td>
+      <td>${employee.email}</td>
+      <td>${employee.department_name || '-'}</td>
+      <td>${employee.position || '-'}</td>
+      <td class="actions">
+        <button class="btn-edit" data-id="${employee.id}">Edit</button>
+        <button class="btn-delete" data-id="${employee.id}">Delete</button>
       </td>
     `;
-    tbody.appendChild(tr);
+    tbody.appendChild(row);
   });
+
+  // Add event listeners to new buttons
+  setupEmployeeActions();
 }
 
-// Load audit logs
-async function loadAuditLogs(filter = {}) {
-  try {
-    let url = '/api/admin/audit-logs';
-    if (filter.action || filter.date) {
-      const params = new URLSearchParams();
-      if (filter.action) params.append('action', filter.action);
-      if (filter.date) params.append('date', filter.date);
-      url += `?${params.toString()}`;
-    }
-    
-    const response = await fetch(url, {
-      headers: { 'x-auth-token': localStorage.getItem('token') }
-    });
-    
-    if (!response.ok) throw new Error('Failed to fetch audit logs');
-    
-    const logs = await response.json();
-    renderAuditLogs(logs);
-  } catch (err) {
-    showError('Failed to load audit logs: ' + err.message);
-  }
-}
-
-// Render audit logs
-function renderAuditLogs(logs) {
-  const tbody = document.querySelector('#auditTable tbody');
-  tbody.innerHTML = '';
-  
-  logs.forEach(log => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${new Date(log.created_at).toLocaleString()}</td>
-      <td>${log.admin_id}</td>
-      <td>${log.action.replace('_', ' ')}</td>
-      <td>${log.target_user}</td>
-      <td>
-        ${log.old_value ? `From: ${log.old_value}<br>` : ''}
-        ${log.new_value ? `To: ${log.new_value}` : ''}
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-// Setup all event listeners
 function setupEventListeners() {
-  // Navigation
-  document.querySelectorAll('.admin-nav a').forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      document.querySelector('.admin-nav a.active').classList.remove('active');
-      e.target.classList.add('active');
-      
-      document.querySelector('section.active-section').classList.remove('active-section');
-      document.getElementById(`${e.target.dataset.section}-section`).classList.add('active-section');
+  // Add employee button
+  const addEmployeeBtn = document.getElementById('addEmployeeBtn');
+  if (addEmployeeBtn) {
+    addEmployeeBtn.addEventListener('click', () => {
+      window.location.href = 'employee-form.html';
+    });
+  }
+
+  // Back to dashboard button
+  const backBtn = document.getElementById('backBtn');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+  }
+
+  // Back to employees button
+  const backButton = document.getElementById('backButton'); // Fixed typo from 'backBotton'
+  if (backButton) {
+    backButton.addEventListener('click', () => {
+      window.location.href = 'employees.html';
+    });
+  }
+
+  // Search functionality
+  document.getElementById('searchInput')?.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
+    document.querySelectorAll('#employeesTable tbody tr').forEach(row => {
+      const cells = row.querySelectorAll('td');
+      let rowText = '';
+      cells.forEach(cell => {
+        // Skip the actions cell (last one)
+        if (!cell.classList.contains('actions')) {
+          rowText += cell.textContent.toLowerCase() + ' ';
+        }
+      });
+      row.style.display = rowText.includes(term) ? '' : 'none';
     });
   });
-  
-  // User search
-  document.getElementById('userSearch').addEventListener('input', (e) => {
-    const searchTerm = e.target.value.toLowerCase();
-    document.querySelectorAll('#usersTable tbody tr').forEach(row => {
-      const text = row.textContent.toLowerCase();
-      row.style.display = text.includes(searchTerm) ? '' : 'none';
+}
+
+// Setup edit and delete buttons
+function setupEmployeeActions() {
+  // Edit buttons
+  document.querySelectorAll('.btn-edit').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const employeeId = e.target.dataset.id;
+      await showEditModal(employeeId);
     });
   });
-  
-  // Refresh buttons
-  document.getElementById('refreshUsers').addEventListener('click', loadUsers);
-  
-  // Role edit buttons
-  document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('btn-edit-role')) {
-      selectedUserId = e.target.dataset.id;
-      openRoleModal();
-    }
+
+  // Delete buttons
+  document.querySelectorAll('.btn-delete').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const employeeId = e.target.dataset.id;
+      await deleteEmployee(employeeId);
+    });
   });
-  
-  // Role modal
-  document.getElementById('confirmRoleChange').addEventListener('click', confirmRoleChange);
-  document.getElementById('cancelRoleChange').addEventListener('click', closeRoleModal);
-  document.querySelector('.modal .close').addEventListener('click', closeRoleModal);
-  
-  // Audit log filters
-  document.getElementById('applyFilters').addEventListener('click', () => {
-    const action = document.getElementById('actionFilter').value;
-    const date = document.getElementById('dateFilter').value;
-    loadAuditLogs({ action, date });
-  });
-  
-  // System settings
-  document.getElementById('saveSettings').addEventListener('click', saveSystemSettings);
-  
-  // Logout
-  document.getElementById('logoutBtn').addEventListener('click', logout);
 }
 
-// Role modal functions
-function openRoleModal() {
-  const modal = document.getElementById('roleModal');
-  modal.style.display = 'block';
-  
-  // Set current role as selected
-  const currentRole = document.querySelector(`.btn-edit-role[data-id="${selectedUserId}"]`)
-    .closest('tr')
-    .querySelector('.role-cell').textContent
-    .toLowerCase();
-    
-  document.getElementById('roleSelect').value = currentRole;
-}
-
-function closeRoleModal() {
-  document.getElementById('roleModal').style.display = 'none';
-}
-
-async function confirmRoleChange() {
-  const newRole = document.getElementById('roleSelect').value;
-  
+// Show edit modal with employee data
+async function showEditModal(employeeId) {
   try {
-    const response = await fetch(`/api/admin/users/${selectedUserId}/role`, {
+    const response = await fetch(`http://localhost:3000/api/employees/${employeeId}`, {
+      headers: {
+        'x-auth-token': localStorage.getItem('token')
+      }
+    });
+
+    if (!response.ok) throw new Error('Failed to load employee data');
+
+    // Ensure response has content
+    const text = await response.text();
+    if (!text) {
+      alert('No data returned for this employee.');
+      return;
+    }
+
+    const employee = JSON.parse(text);
+
+    // Populate form
+    document.getElementById('editEmployeeId').value = employee.id;
+    document.getElementById('editFirstName').value = employee.first_name;
+    document.getElementById('editLastName').value = employee.last_name;
+    document.getElementById('editEmail').value = employee.email;
+
+    // Show modal
+    document.getElementById('editEmployeeModal').style.display = 'block';
+  } catch (err) {
+    console.error('Error loading employee:', err);
+    alert('Failed to load employee data');
+  }
+}
+
+
+// Handle edit form submission
+document.getElementById('editEmployeeForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const employeeId = document.getElementById('editEmployeeId').value;
+  const updatedData = {
+    first_name: document.getElementById('editFirstName').value,
+    last_name: document.getElementById('editLastName').value,
+    email: document.getElementById('editEmail').value,
+    // Add other fields...
+  };
+
+  try {
+    const response = await fetch(`http://localhost:3000/api/employees/${employeeId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'x-auth-token': localStorage.getItem('token')
       },
-      body: JSON.stringify({ role: newRole })
+      body: JSON.stringify(updatedData)
     });
+
+    if (!response.ok) throw new Error('Update failed');
     
-    if (!response.ok) throw new Error('Failed to update role');
-    
-    closeRoleModal();
-    await loadUsers();
-    await loadAuditLogs();
-    showSuccess('Role updated successfully');
+    // Close modal and refresh list
+    document.getElementById('editEmployeeModal').style.display = 'none';
+    await loadEmployees();
+    alert('Employee updated successfully');
   } catch (err) {
-    showError('Failed to update role: ' + err.message);
+    console.error('Error updating employee:', err);
+    alert('Failed to update employee');
+  }
+});
+
+// Delete employee
+async function deleteEmployee(employeeId) {
+  if (!confirm('Are you sure you want to delete this employee?')) return;
+
+  try {
+    const response = await fetch(`http://localhost:3000/api/employees/${employeeId}`, {
+      method: 'DELETE',
+      headers: {
+        'x-auth-token': localStorage.getItem('token')
+      }
+    });
+
+    if (!response.ok) throw new Error('Delete failed');
+    
+    await loadEmployees();
+    alert('Employee deleted successfully');
+  } catch (err) {
+    console.error('Error deleting employee:', err);
+    alert('Failed to delete employee');
   }
 }
 
-// System settings
-async function saveSystemSettings() {
-  showSuccess('Settings saved successfully');
-}
+// Close modal when clicking X
+document.querySelector('.close-modal').addEventListener('click', () => {
+  document.getElementById('editEmployeeModal').style.display = 'none';
+});
 
-// User info and logout
-function updateUserInfo() {
-  if (currentUser) {
-    document.getElementById('currentUser').textContent = 
-      `${currentUser.username} (${currentUser.role})`;
-  }
-}
-
-function logout() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  redirectToLogin();
-}
-
-function redirectToLogin() {
-  window.location.href = 'login.html';
-}
-
-// Helper functions
-function capitalizeFirstLetter(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
-function showError(message) {
-  console.error(message);
-  alert(message);
-}
-
-function showSuccess(message) {
-  console.log(message);
-  alert(message);
-}
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadEmployees();
+  setupEventListeners();
+});

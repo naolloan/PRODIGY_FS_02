@@ -1,5 +1,5 @@
 /* Base Styles */
-.admin-container {
+.manager-container {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   max-width: 1200px;
   margin: 0 auto;
@@ -23,7 +23,7 @@ header {
 }
 
 /* Navigation */
-.admin-nav ul {
+.manager-nav ul {
   display: flex;
   list-style: none;
   padding: 0;
@@ -31,14 +31,14 @@ header {
   border-bottom: 1px solid #ddd;
 }
 
-.admin-nav li a {
+.manager-nav li a {
   padding: 10px 20px;
   text-decoration: none;
   color: #333;
   border-bottom: 3px solid transparent;
 }
 
-.admin-nav li a.active {
+.manager-nav li a.active {
   border-bottom-color: #2c3e50;
   font-weight: 600;
 }
