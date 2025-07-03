@@ -85,12 +85,12 @@ project-root/
    Create a `.env` file inside the `backend/` directory:
 
    ```
-   PORT=3000
    DB_HOST=127.0.0.1
-   DB_USER=root
-   DB_PASSWORD=yourpassword
+   DB_USER=emp_admin
+   DB_PASSWORD=EM-ADMIN
    DB_NAME=employee_management
-   JWT_SECRET=your_jwt_secret
+   JWT_SECRET=your_jwt_secret_key
+   PORT=3306
    ```
 
 3. **Install Dependencies:**
